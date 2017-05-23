@@ -157,7 +157,6 @@ void ExceptionHandler(ExceptionType which)
         ASSERT(FALSE);
     }
 }
-
 //----------------------------------------------------------------------
 // Fork system call implementation
 //----------------------------------------------------------------------
@@ -171,9 +170,9 @@ int forkImpl() {
 
     // Find a new PID, and then construct new PCB. 
    // Implement me
-    int currPID = 1; // @@@@@@ PLACEHOLDER @@@@@@
-    int childNumPages = 1;
-    int newPID = 1;
+   // More hintes: Use processManager to get a new PID.
+
+   // After finding out your own PID, call new AddrSpace() to create a new space
     // Make a copy of the address space as the child space, save its registers
    // Implement me
 
@@ -227,8 +226,11 @@ void yieldImpl() {
     //Restore the corresponding user process's states (both registers and page table)
     
    // Implement me
+   // Essentially you use currentThread->Yield() to accomplish the context switch 
+   // of corresponding user process. But before that, make sure you follow above comments.
    
 }
+
 
 //----------------------------------------------------------------------
 // Exit system call implementation.
@@ -242,11 +244,17 @@ void exitImpl() {
     int currPID = currentThread->space->getPCB()->getPID();
     
     fprintf(stderr, "Process %d exits with %d\n", currPID, status);
-
-    //Set the exist status in the PCB of this process 
+    //Implment me
+    //Set the exist status in the PCB of this process   
+    //Use  currentThread->space->getPCB() to find PCB. 
     
     //Also let other processes  know this process  exits.
-
+    //You can use processManager to do that.
+    //Calling currentThread->Finish() at the end will trigger
+    //the thread scheduler to find another thread. 
+    //If none available, machine halting may happen.
+    //Optionally you can check if I am the last process.
+   
    //Clean up the space of this process
     delete currentThread->space;
     currentThread->space = NULL;
@@ -256,28 +264,28 @@ void exitImpl() {
     
     //Terminate the current Nacho thread
 }
-
-//----------------------------------------------------------------------
-// Join system call implementation.
-//----------------------------------------------------------------------
-
+//--------------------------------------------------------
+// joinImpl()
+//-------------------------------------------------------
 int joinImpl() {
 
     int otherPID = machine->ReadRegister(4);
 
    //Change the process state in its PCB as P_BLOCKED
     currentThread->space->getPCB()->status = P_BLOCKED;
-        
-   // Use proessManager to join otherPID 
-   	// Implement me
+
+   // If the other process has  already exited, then just return its status
+   // Use proessManager to join otherPID
+   // Implement me
 
 
 
    //Change the process state in its PCB as P_RUNNING
-   	// Implement me
-    
+    // Implement me
+
     return processManager->getStatus(otherPID);
 }
+
 
 //----------------------------------------------------------------------
 // Exec system call helper.
@@ -399,11 +407,9 @@ char* copyString(char* oldStr) {
     }
     return newStr;
 }
-
-//----------------------------------------------------------------------
-// Open file system call implementation.
-//----------------------------------------------------------------------
-
+//----------------------------------------------------------------
+// openImpl(char*filename)
+//---------------------------------------------------------------
 int openImpl(char* filename) {
     
     int index = 0;
@@ -420,6 +426,9 @@ int openImpl(char* filename) {
         SysOpenFile currSysFile;
 
        // Setup this SysOpenFile data structure
+       //Need to set currSysFile.file (pointing to OpenFile data structure)
+       // also currSysFile.numProcessAccessing
+      // and currSysFile.filename  
    	// Implement me
        
         index = openFileManager->addFile(currSysFile);
@@ -432,15 +441,19 @@ int openImpl(char* filename) {
     UserOpenFile currUserFile;
     
    //Set up this UserOpenFile data structure
+   // currUserFile.indeInSysOpenFileList should point to the index from openFileManager.
+   // currUserFile.currOffsetInFile is the offset position of the current file openned
    // Implement me
     int currFileID = currentThread->space->getPCB()->addFile(currUserFile);
     return currFileID;
 }
 
+
 //----------------------------------------------------------------------
 // Helper function that either reads from main mem into a buffer or 
 // writes from a buffer into main mem.
 //----------------------------------------------------------------------
+
 
 int userReadWrite(int virtAddr, char* buffer, int size, int type) {
 
@@ -452,6 +465,7 @@ int userReadWrite(int virtAddr, char* buffer, int size, int type) {
     if (type == USER_READ) { // Read and copy data from the system buffer to the user space in main memory
         while (size > 0) {
             //Translate the virtual address to phyiscal address physAddr 
+           //Just one line of code
             //Implement me
             numBytesFromPSLeft = PageSize - physAddr % PageSize;
             numBytesToCopy = (numBytesFromPSLeft < size) ? numBytesFromPSLeft : size;
@@ -464,6 +478,7 @@ int userReadWrite(int virtAddr, char* buffer, int size, int type) {
     else if (type == USER_WRITE) { // Copy data from the user's main memory to the system buffer
         while (size > 0) {
             //Translate the virtual address to phyiscal address physAddr 
+           //Just one line of code
             //Implement me
             numBytesFromPSLeft = PageSize - physAddr % PageSize;
             numBytesToCopy = (numBytesFromPSLeft < size) ? numBytesFromPSLeft : size;
@@ -500,23 +515,24 @@ void writeImpl() {
         openFileManager->consoleWriteLock->Release();
     }
     else {
+        //allocate some buffer space
         //Fetch data from the user space to this system buffer using  userReadWrite().
+        //Just two line of code
         //Implement me
         UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
-	//Use openFileManager to find the openned file structure (SysOpenFile)
-	//Use writeAt() to write out the above buffer withe size listed..
+	//Use openFileManager->getFile method  to find the openned file structure (SysOpenFile)
+	//Use SysOpenFile->file's writeAt() to write out the above buffer with size listed.
 	//Increment the current offset  by the actual number of bytes written.
+        //Just 3 lines of code
         //Implement me
             
         
     }
     delete [] buffer;
 }
-
 //----------------------------------------------------------------------
 // Read file system call implementation.
 //----------------------------------------------------------------------
-
 int readImpl() {
 
     int readAddr = machine->ReadRegister(4);
@@ -539,6 +555,7 @@ int readImpl() {
 	//Now from openFileManger, find the SystemOpenFile data structure for this userFile.
 	//Use ReadAt() to read the file at selected offset to this system buffer buffer[]
 	// Adust the offset in userFile to reflect my current position.
+       // The above few lines of code are very similar to ones in writeImpl()
 	// Implement me
         
     }
@@ -557,10 +574,10 @@ void closeImpl() {
 
     int fileID = machine->ReadRegister(4);
 
-    // Find the data structure of this file openned in PCB.
-    // Use openFileManager to get a pointer to the system-wide open file data structure
-    // Close the file in the system-wide openfile data structure
-    // Close and removethe file  in the open file list of this process PCB.
+    // Find the UserOpenFile data structure of this file openned in PCB based on this fileID descriptor
+    // Use openFileManager's getFile method to get a pointer to the system-wide SysOpenFile  data structure
+    // Call the close method in SysOpenFile 
+    // Remove the file  in the open file list of this process PCB.
     // Implement me
 }
 

@@ -7,24 +7,34 @@
 
 #include "pcb.h"
 #include "utility.h"
-
+#include "openfilemanager.h"
+#include "system.h"
 //-----------------------------------------------------------------------------
 // PCB::PCB
 //
 //     Constructor
 //-----------------------------------------------------------------------------
 
-PCB::PCB(int pid, int parentPID) : openFilesBitMap(MAX_NUM_FILES_OPEN) {
+PCB::PCB(int pid1, int parentPID1) : openFilesBitMap(MAX_NUM_FILES_OPEN) {
 
-    this->pid = pid;
-    this->parentPID = parentPID;
-    this->process = NULL;
-    //openFilesBitMap maintains what has been opened.
-    // Account for files that are already opened, including descriptor  0 and 1
-    // Child process should inherit the file descriptors openned in the parent process
-    // Implement me
+  this->pid = pid1;
+  this->parentPID = parentPID1;
+  this->process = NULL;
+  //openFilesBitMap maintains what has been opened.
+  // Account for files that are already opened, including descriptor  0 and 1
+  // Child process should inherit the file descriptors openned in the parent process
+  // Copy parent's openFilesBitMap
+  PCB* parentPCB = processManager->getPCB(parentPID);
+  BitMap parentBitMap = parentPCB->getOpenFilesBitMap();
+  unsigned int* parentMap = parentBitMap.getMap();
+  unsigned int parentBit;
+  for(int i = 0; i < MAX_NUM_FILES_OPEN ; i++){
+    parentBit = parentMap[i];
+    openFilesBitMap.Mark(parentBit);
     
-   
+  }
+
+  // Copy parent's userOpenFileList
 }
 
 //-----------------------------------------------------------------------------
@@ -86,4 +96,21 @@ UserOpenFile* PCB::getFile(int fileID) {
 
 void PCB::removeFile(int fileID) {
     openFilesBitMap.Clear(fileID);
+}
+
+
+//-----------------------------------------
+// PCB::getOpenFilesBitMap()
+// - Returns openFilesBitMap of PCB
+//----------------------------------------
+BitMap PCB::getOpenFilesBitMap(){
+  return openFilesBitMap;
+}
+
+//------------------------------------
+// PCB:: getUserOpenFileList()
+// - Returns userOpenFileList of PCB
+//-----------------------------------
+UserOpenFile PCB::getUserOpenFileList(){
+  return userOpenFileList;
 }

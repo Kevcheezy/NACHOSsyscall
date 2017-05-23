@@ -42,30 +42,6 @@ ProcessManager::~ProcessManager() {
     delete [] addrSpaceList;
 }
 
-//----------------------------------------------------------------------
-// ProcessManager::allocPid
-//  Allocate an unused PID to be used by a process.
-//
-//  For now do nothing.
-//----------------------------------------------------------------------
-/*
-int ProcessManager::allocPid()
-{
-    return 0;
-}
-*/
-//----------------------------------------------------------------------
-// ProcessManager::freePid
-//  Deallocate a PID that is in use so that it can be allocated again by
-//  another process.
-//
-//  For now do nothing.
-//----------------------------------------------------------------------
-/*
-void ProcessManager::freePid(int pid)
-{
-}
-*/
 //-----------------------------------------------------------------------------
 // ProcessManager::getPID
 //     Returns the first free PID found.
@@ -121,14 +97,16 @@ void ProcessManager::join(int pid) {
         conditionForOtherProcess = new Condition("");
         conditionList[pid] = conditionForOtherProcess;
     }
-   // Increment  processesWaitingOnPID[pid].
-   // Conditional waiting on when it becomes 0. When it bcomes 0, recycle pid.
    // Implement me. 
+   // Acqure the lock on this pid
+   // Increase the counter processesWaitingOnPID[pid] as the number of processes waiting for this 
+   // Conditional wait  
+   // Decrease the counter processesWaitingOnPID[pid]
+   // If the above coutner bcomes 0,  recycle pid.
+   // Release the lock on this pid
+  //  
 
 }
-
-
-
 
 //-----------------------------------------------------------------------------
 // ProcessManager::broadcast
@@ -145,6 +123,7 @@ void ProcessManager::broadcast(int pid) {
     if (condition != NULL) { // something is waiting on this process
 	// Wake up others 
 	// Implement me
+	// Acquire the lock, conditional broadcast, release lock
     }
 }
 
@@ -152,6 +131,7 @@ void ProcessManager::broadcast(int pid) {
 // ProcessManager::getStatus
 //     Returns the status of a given process
 //-----------------------------------------------------------------------------
+
 int ProcessManager::getStatus(int pid) {
     if (processesBitMap.Test(pid) == 0) {
         return -1; // process finished

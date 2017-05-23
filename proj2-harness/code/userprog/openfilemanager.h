@@ -22,7 +22,7 @@ class OpenFileManager {
         int addFile(SysOpenFile file);
         SysOpenFile* getFile(char* filename, int& index);
         SysOpenFile* getFile(int index);
-
+	BitMap getSysOpenFilesMap(); // (KC) for PCB constr.
 	Lock *consoleWriteLock;
 
     private:

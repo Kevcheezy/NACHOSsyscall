@@ -23,7 +23,7 @@ class Thread;
 class PCB {
 
     public:
-        PCB(int pid, int parentPID);
+        PCB(int pid1, int parentPID1);
         ~PCB();
         int getPID();
         int status;
@@ -31,6 +31,9 @@ class PCB {
         int addFile(UserOpenFile file);
         UserOpenFile* getFile(int fileID);
         void removeFile(int fileID);
+	BitMap getOpenFilesBitMap(); // (KC)
+	UserOpenFile getUserOpenFileList(); //(KC)
+	
 
     private:
         BitMap openFilesBitMap;

@@ -51,6 +51,7 @@ public:
     // write the bitmap to a file
     void FetchFrom(OpenFile *file); 	// fetch contents from disk
     void WriteBack(OpenFile *file); 	// write contents to disk
+    unsigned int* getMap();        // (KC) returns map of bitmap
 
 private:
     int numBits;			// number of bits in the bitmap

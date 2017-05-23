@@ -138,7 +138,6 @@ AddrSpace::AddrSpace(OpenFile *executable, PCB* pcb)
         pcb = new PCB(-1,-1);
     }
 }
-
 //----------------------------------------------------------------------
 // AddrSpace::AddrSpace
 //     Copy constructor that makes an identical copy of "other" address space.
@@ -147,7 +146,7 @@ AddrSpace::AddrSpace(OpenFile *executable, PCB* pcb)
 AddrSpace::AddrSpace(const AddrSpace* other, PCB* pcb) {
     
     ASSERT(other->numPages <= NumPhysPages);
-    unsigned int i;
+
     // Copy all page table entries over, create associated PCB
     numPages = other->numPages;
     memoryManager->lock->Acquire();
@@ -159,20 +158,24 @@ AddrSpace::AddrSpace(const AddrSpace* other, PCB* pcb) {
         pageTable = new TranslationEntry[numPages];
 	//Allocate physical pages for each page in the new process under pcb
 	//Implement me
-	for( i = 0; i < other->numPages; i++){
-	  pageTable[i].virtualPage = other->pageTable[i].virtualPage;
-	  pageTable[i].physicalPage = other->pageTable[i].virtualPage;
-	  pageTable[i].valid = other->pageTable[i].valid;
-	  pageTable[i].use = other->pageTable[i].use;
-	  pageTable[i].dirty = other->pageTable[i].dirty;
-	  pageTable[i].readOnly = other->pageTable[i].readOnly;
-	}
+
+
+	//More hint:
+       // Look at sample code of AddrSpace::AddrSpace(OpenFile *executable, PCB* pcb)) 
+       //code  to see how it  sets up each page table entry of a new process 
+      // Also (other->pageTable)[i] gives the i-th logical page table entry of "other" process.
+
+
         memoryManager->lock->Release();
 
         machineLock->Acquire();
 	//Copy page content of the other process to the new address space page by page
         //Implement me
-        
+	//More hint:
+       	// To get the physical addres (by byte) of the other process,
+       // you can use (other->pageTable)[i].physicalPage * PageSize.
+      //Then you can use bzero() to clean up and  use , bcopy() to complete the copy.
+ 
         machineLock->Release();
     }
     else {// Cannot fit into the current available memory
@@ -182,6 +185,7 @@ AddrSpace::AddrSpace(const AddrSpace* other, PCB* pcb) {
     }
 
 }
+
 
 //----------------------------------------------------------------------
 // AddrSpace::~AddrSpace

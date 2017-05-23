@@ -56,6 +56,18 @@ SysOpenFile* OpenFileManager::getFile(char* filename, int& index) {
     return NULL; // couldn't find a file by that name
 }
 
+//-----------------------------------------------
+// OpenFileManager::getSysOpenFilesMap()
+// Author : KC
+// Returns the current sysOpenFileMap
+// -----------------------------------------------
+BitMap OpenFileManager::getSysOpenFilesMap(){
+  return sysOpenFilesMap;
+}
+
+
+
+
 //-----------------------------------------------------------------------------
 // OpenFileManager::getFile
 //
