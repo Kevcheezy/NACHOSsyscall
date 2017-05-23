@@ -1,13 +1,12 @@
-// useropenfile.h
-//
-
 #ifndef USEROPENFILE_H
 #define USEROPENFILE_H
 
-struct UserOpenFile {
-    char *filename;         // This file's name
-    int fileTableIndex;     // This file's index in the system open file list
-    int currentPosition;    // User's current read/write position in the file
+class UserOpenFile {
+
+    public:
+        char* fileName;
+        int indexInSysOpenFileList;
+        int currOffsetInFile;
 };
 
-#endif //USEROPENFILE_H
+#endif // USEROPENFILE_H

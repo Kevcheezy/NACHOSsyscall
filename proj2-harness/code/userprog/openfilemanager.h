@@ -1,28 +1,33 @@
-// openfilemanager.h
-//
+//----------------------------------------------------------------------
+// OpenFileManager
+//     
+//     Class to manage a list of all the currently open system files,
+//     used for all the system calls in Project 2, Part 2.
+//----------------------------------------------------------------------
 
-#ifndef OPENFILEMANAGER_H
-#define OPENFILEMANAGER_H
+#ifndef SYSOPENFILEMANAGER_H
+#define SYSOPENFILEMANAGER_H
+
+#define MAX_SYS_OPEN_FILES 32
 
 #include "sysopenfile.h"
+#include "bitmap.h"
 #include "synch.h"
-
-#define OPEN_FILE_TABLE_SIZE 32
 
 class OpenFileManager {
 
-public:
-    OpenFileManager();
-    ~OpenFileManager();
+    public:
+        OpenFileManager();
+        ~OpenFileManager();
+        int addFile(SysOpenFile file);
+        SysOpenFile* getFile(char* filename, int& index);
+        SysOpenFile* getFile(int index);
 
-    int addOpenFile(SysOpenFile openFile);
-    SysOpenFile *getOpenFile(int index);
+	Lock *consoleWriteLock;
 
-    Lock *consoleWriteLock;
-    
-private:
-    SysOpenFile openFileTable[OPEN_FILE_TABLE_SIZE];
-
+    private:
+        SysOpenFile sysOpenFileList[MAX_SYS_OPEN_FILES];
+        BitMap sysOpenFilesMap; // managing how many files open
 };
 
-#endif // OPENFILEMANAGER_H
+#endif // SYSOPENFILEMANAGER_H

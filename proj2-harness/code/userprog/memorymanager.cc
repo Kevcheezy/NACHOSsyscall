@@ -1,47 +1,43 @@
-// memorymanager.cc
-//
+/*
+ * MemoryManager implementation
+ *
+ * Used to facilitate contiguous virtual memory.  Utilizes the provided bitmap
+ * data structure to store the state of pages in the page table.
+*/
 
 #include "memorymanager.h"
-#include "system.h"
+#include "machine.h"
 
-//----------------------------------------------------------------------
-// MemoryManager::MemoryManager
-//  Create a new memory manager and initialize it with the size of
-//  physical memory.
-//----------------------------------------------------------------------
-
-MemoryManager::MemoryManager()
-{
-    // Create a bitmap with one bit for each frame
-    frames = new BitMap(NumPhysPages);
+// Constructor
+MemoryManager::MemoryManager() {
+    physPageAllocation = new BitMap(NumPhysPages);
+    lock = new Lock("memoryManager->lock");
 }
 
-//----------------------------------------------------------------------
-// MemoryManager::~MemoryManager
-//  Deallocate a memory manager.
-//----------------------------------------------------------------------
-
-MemoryManager::~MemoryManager()
-{
-    delete frames;
+// Destructor
+MemoryManager::~MemoryManager() {
+    delete physPageAllocation;
+    delete lock;
 }
 
-//----------------------------------------------------------------------
-// MemoryManager::allocFrame
-//  Allocate a free frame of physical memory to be used by a process.
-//----------------------------------------------------------------------
+// Allocates the first clear page
+int MemoryManager::getPage() {
 
-int MemoryManager::allocFrame()
-{
-    return 0;
+    int pageIndex = physPageAllocation->Find(); // sets the bit as a side-effect
+    if (pageIndex == -1) {
+        DEBUG('m', "Unable to find a page from the page table.");
+        ASSERT(FALSE);
+    } else {
+        return pageIndex;
+    }
 }
 
-//----------------------------------------------------------------------
-// MemoryManager::freeFrame
-//  Deallocate a frame that is in use so that it can be allocated by
-//  another process.
-//----------------------------------------------------------------------
+// Frees a page from the table
+void MemoryManager::clearPage(int pageIndex) {
+    physPageAllocation->Clear(pageIndex);
+}
 
-void MemoryManager::freeFrame(int frame)
-{
+// Returns the number of available pages
+int MemoryManager::getNumFreePages() {
+    return physPageAllocation->NumClear();
 }
