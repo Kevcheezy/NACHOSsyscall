@@ -116,7 +116,7 @@ void ProcessManager::join(int pid) {
 
 void ProcessManager::broadcast(int pid) {
 
-    Lock* lock = lockList[pid];
+  //Lock* lock = lockList[pid];
     Condition* condition = conditionList[pid];
     pcbStatuses[pid] = pcbList[pid]->status;
 
@@ -137,4 +137,14 @@ int ProcessManager::getStatus(int pid) {
         return -1; // process finished
     }
     return pcbStatuses[pid];
+}
+
+//------------------------------
+// ProcessManager::getPCB
+//----------------------------
+
+PCB* ProcessManager::getPCB(int pid){
+  for (int i = 0; i < MAX_PROCESSES; i++){
+    if(pcbList[i]->getPID() == pid) return pcbList[i];
+  }
 }

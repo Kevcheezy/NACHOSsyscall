@@ -146,7 +146,7 @@ AddrSpace::AddrSpace(OpenFile *executable, PCB* pcb)
 AddrSpace::AddrSpace(const AddrSpace* other, PCB* pcb) {
     
     ASSERT(other->numPages <= NumPhysPages);
-
+    unsigned int i;
     // Copy all page table entries over, create associated PCB
     numPages = other->numPages;
     memoryManager->lock->Acquire();
@@ -157,25 +157,41 @@ AddrSpace::AddrSpace(const AddrSpace* other, PCB* pcb) {
         this->pcb = pcb;
         pageTable = new TranslationEntry[numPages];
 	//Allocate physical pages for each page in the new process under pcb
-	//Implement me
-
 
 	//More hint:
        // Look at sample code of AddrSpace::AddrSpace(OpenFile *executable, PCB* pcb)) 
        //code  to see how it  sets up each page table entry of a new process 
-      // Also (other->pageTable)[i] gives the i-th logical page table entry of "other" process.
-
+	// Also (other->pageTable)[i] gives the i-th logical page table entry of "other" process.
+	for (i = 0; i < other->numPages; i++){
+	  pageTable[i].virtualPage = i;
+	  pageTable[i].physicalPage = memoryManager->getPage();
+	  pageTable[i].valid = TRUE;
+	  pageTable[i].use = FALSE;
+	  pageTable[i].dirty = FALSE;
+	  pageTable[i].readOnly = FALSE;
+	}
 
         memoryManager->lock->Release();
 
         machineLock->Acquire();
 	//Copy page content of the other process to the new address space page by page
-        //Implement me
 	//More hint:
        	// To get the physical addres (by byte) of the other process,
        // you can use (other->pageTable)[i].physicalPage * PageSize.
       //Then you can use bzero() to clean up and  use , bcopy() to complete the copy.
- 
+	for( i = 0; i < other->numPages; i++){
+	  pageTable[i].virtualPage = (other->pageTable)[i].virtualPage;
+	  pageTable[i].valid = (other->pageTable)[i].valid;
+	  pageTable[i].use = (other->pageTable)[i].use;
+	  pageTable[i].dirty = (other->pageTable)[i].dirty;
+	  pageTable[i].readOnly = (other->pageTable)[i].readOnly;
+	  int otherPhysAddr = (other->pageTable)[i].physicalPage * PageSize;
+	  int physAddr = pageTable[i].physicalPage * PageSize;
+	  bzero(&(machine->mainMemory[physAddr]), PageSize);
+	  bcopy( &((machine->mainMemory)[otherPhysAddr]) ,
+		&((machine->mainMemory)[physAddr]),
+		PageSize );
+	}
         machineLock->Release();
     }
     else {// Cannot fit into the current available memory

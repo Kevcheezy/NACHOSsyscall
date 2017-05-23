@@ -170,12 +170,13 @@ int forkImpl() {
 
     // Find a new PID, and then construct new PCB. 
    // Implement me
+    int currPID = 1; // @@@ STUB @@@
    // More hintes: Use processManager to get a new PID.
 
    // After finding out your own PID, call new AddrSpace() to create a new space
     // Make a copy of the address space as the child space, save its registers
    // Implement me
-
+    int childNumPages = 1; // @@@ STUB @@@ 
     // Mandatory printout of the forked process
     PCB* parentPCB = currentThread->space->getPCB();
     PCB* childPCB = childThread->space->getPCB();
@@ -184,7 +185,8 @@ int forkImpl() {
       
     // Set up the function for the that new process will run and yield
     childThread->Fork(copyStateBack, newProcessPC);
-    currentThread->Yield(); 
+    currentThread->Yield();
+    int newPID = 1; // @@@ STUB @@@
     return newPID;
 }
 

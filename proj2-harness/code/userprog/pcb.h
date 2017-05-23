@@ -32,7 +32,7 @@ class PCB {
         UserOpenFile* getFile(int fileID);
         void removeFile(int fileID);
 	BitMap getOpenFilesBitMap(); // (KC)
-	UserOpenFile getUserOpenFileList(); //(KC)
+	UserOpenFile* getUserOpenFileList(); //(KC)
 	
 
     private:
