@@ -160,7 +160,12 @@ AddrSpace::AddrSpace(const AddrSpace* other, PCB* pcb) {
 	//Allocate physical pages for each page in the new process under pcb
 	//Implement me
 	for( i = 0; i < other->numPages; i++){
-
+	  pageTable[i].virtualPage = other->pageTable[i].virtualPage;
+	  pageTable[i].physicalPage = other->pageTable[i].virtualPage;
+	  pageTable[i].valid = other->pageTable[i].valid;
+	  pageTable[i].use = other->pageTable[i].use;
+	  pageTable[i].dirty = other->pageTable[i].dirty;
+	  pageTable[i].readOnly = other->pageTable[i].readOnly;
 	}
         memoryManager->lock->Release();
 
