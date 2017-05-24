@@ -27,6 +27,7 @@ class ProcessManager {
         void broadcast(int pid);
         void join(int pid);
 	PCB* getPCB(int pid); // (KC): returns PCB via PID
+	PCB* getNewPCB(PCB* parent, Thread *thread); // (KC) 
 	AddrSpace* getAddrSpace(int pid); /// (KC) : returns AddrSpace via PID
     private:
         BitMap processesBitMap;

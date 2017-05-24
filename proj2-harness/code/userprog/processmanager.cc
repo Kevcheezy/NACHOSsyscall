@@ -132,9 +132,10 @@ void ProcessManager::broadcast(int pid) {
     // Implement me -- done
     // Acquire the lock, conditional broadcast, release lock
     lock->Acquire();
-    while( (getStatus(pid)!=-1)  && (processesWaitingOnPID[pid] > 0) ){
-      condition->Broadcast(lock);
-    }
+    //while( (getStatus(pid)!=-1)  && (processesWaitingOnPID[pid] > 0) ){
+    // condition->Broadcast(lock);
+    //}
+    condition->Broadcast(lock);
     lock->Release();
   }
 }
@@ -157,6 +158,12 @@ int ProcessManager::getStatus(int pid) {
 //----------------------------
 
 PCB* ProcessManager::getPCB(int pid){
+  if( pid < 0 || pid >= MAX_PROCESSES){
+    return NULL;
+  }
+  if( !processesBitMap.Test(pid)){
+    return NULL;
+  }
   return pcbList[pid];
 }
 
@@ -167,4 +174,15 @@ PCB* ProcessManager::getPCB(int pid){
 
 AddrSpace* ProcessManager::getAddrSpace(int pid){
   return addrSpaceList[pid];
+}
+
+PCB* ProcessManager::getNewPCB(PCB* parent, Thread *thread){
+  /*  int newPID = processesBitMap.Find();
+  if(newPID == -1) {
+    return NULL;
+  }
+  PCB *ret;
+  if(parent){
+    ret = new PCB(newPID, parent->getPID())
+  */
 }

@@ -163,12 +163,15 @@ AddrSpace::AddrSpace(const AddrSpace* other, PCB* pcb) {
        //code  to see how it  sets up each page table entry of a new process 
 	// Also (other->pageTable)[i] gives the i-th logical page table entry of "other" process.
 	for (i = 0; i < other->numPages; i++){
+	  
 	  pageTable[i].virtualPage = i;
 	  pageTable[i].physicalPage = memoryManager->getPage();
 	  pageTable[i].valid = TRUE;
 	  pageTable[i].use = FALSE;
 	  pageTable[i].dirty = FALSE;
 	  pageTable[i].readOnly = FALSE;
+	  
+	  //memcpy(&pageTable[i], &(other->pageTable[i]), sizeof(TranslationEntry));
 	}
 
         memoryManager->lock->Release();

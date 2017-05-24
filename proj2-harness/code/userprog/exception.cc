@@ -252,7 +252,6 @@ void yieldImpl() {
 void exitImpl() {
 
 
-    //
     int status = machine->ReadRegister(4);
     int currPID = currentThread->space->getPCB()->getPID();
     
@@ -260,9 +259,11 @@ void exitImpl() {
     //Implment me
     //Set the exist status in the PCB of this process   
     //Use  currentThread->space->getPCB() to find PCB. 
-    
+    PCB* temp = currentThread->space->getPCB(); //KC
+    temp->status = P_BAD; //KC
     //Also let other processes  know this process  exits.
     //You can use processManager to do that.
+     processManager->broadcast(currPID); //KC
     //Calling currentThread->Finish() at the end will trigger
     //the thread scheduler to find another thread. 
     //If none available, machine halting may happen.
