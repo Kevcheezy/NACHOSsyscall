@@ -291,12 +291,15 @@ int joinImpl() {
    // If the other process has  already exited, then just return its status
    // Use proessManager to join otherPID
    // Implement me
-
+    if(processManager->getStatus(otherPID) == P_BAD){ //KC
+      return processManager->getStatus(otherPID); //KC
+    } // KC
+    processManager->join(otherPID); //KC
 
 
    //Change the process state in its PCB as P_RUNNING
     // Implement me
-
+    currentThread->space->getPCB()->status = P_RUNNING; //KC
     return processManager->getStatus(otherPID);
 }
 
