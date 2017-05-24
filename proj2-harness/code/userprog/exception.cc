@@ -403,6 +403,7 @@ void readFilenameFromUsertoKernel(char* filename) {
 void createImpl(char* filename) {
     //use fileSystem to create a file
    	// Implement me
+  fileSystem->Create(filename,0);//KC
 }
 
 //----------------------------------------------------------------------
@@ -443,7 +444,10 @@ int openImpl(char* filename) {
        // also currSysFile.numProcessAccessing
       // and currSysFile.filename  
    	// Implement me
-       
+	currSysFile.file = openFile; // KC
+	currSysFile.numProcessesAccessing = 0; // KC
+	currSysFile.filename = filename; // KC
+	
         index = openFileManager->addFile(currSysFile);
     }
     else { // the file is already open by another process
@@ -457,7 +461,10 @@ int openImpl(char* filename) {
    // currUserFile.indeInSysOpenFileList should point to the index from openFileManager.
    // currUserFile.currOffsetInFile is the offset position of the current file openned
    // Implement me
-    int currFileID = currentThread->space->getPCB()->addFile(currUserFile);
+    currUserFile.fileName = filename; // KC (necessary?)
+    currUserFile.indexInSysOpenFileList = index; // KC
+    currUserFile.currOffsetInFile = currSysFile->file->Length(); // KC (Length?)
+    int currFileID = currentThread->space->getPCB()->addFile(currUserFile);//given
     return currFileID;
 }
 
@@ -534,7 +541,7 @@ void writeImpl() {
         //Implement me
       
       UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID); //given
-      int numBytesCopied = userReadWrite(currentThread->space->Translate(writeAddr),
+      int numBytesCopied = userReadWrite(writeAddr,//currentThread->space->Translate(writeAddr), 
 					 buffer,
 					 size,
 					 USER_WRITE);//KC
@@ -546,11 +553,13 @@ void writeImpl() {
         //Implement me
       
       SysOpenFile* sysOpenFilePtr = openFileManager->getFile(userFile->fileName,
-							     userFile->indexInSysOpenFileList);// KC
+							     ( userFile->indexInSysOpenFileList));// KC
+      
       int numBytesWritten =  sysOpenFilePtr->file->WriteAt(buffer,
-							   numBytesCopied,
+							   size,//numBytesCopied,
 							   userFile->currOffsetInFile); // KC
-      userFile->currOffsetInFile = userFile->currOffsetInFile + numBytesWritten;
+      
+      userFile->currOffsetInFile += numBytesWritten; // KC
         
     }
     delete [] buffer;
@@ -575,18 +584,27 @@ int readImpl() {
         }
     }
     else {//Read data from the file to the system buffer
-	
-	UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
+      
+      UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID); //given
 	//Now from openFileManger, find the SystemOpenFile data structure for this userFile.
+	      
+      SysOpenFile* sysOpenFilePtr = openFileManager->getFile(userFile->fileName,
+							     ( userFile->indexInSysOpenFileList));// KC
 	//Use ReadAt() to read the file at selected offset to this system buffer buffer[]
+      int numBytesRead = sysOpenFilePtr->file->ReadAt(buffer, size, userFile->currOffsetInFile); //KC
 	// Adust the offset in userFile to reflect my current position.
+      userFile->currOffsetInFile += numBytesRead; //KC
        // The above few lines of code are very similar to ones in writeImpl()
 	// Implement me
         
     }
     //Now copy data from the system buffer to the targted main memory space using userReadWrite()
     //Implement me
-
+    //int userReadWrite(int virtAddr, char* buffer, int size, int type)
+    numActualBytesRead = userReadWrite(readAddr,
+				       buffer,
+				       size,
+				       USER_READ); // KC
     delete [] buffer;
     return numActualBytesRead;
 }
@@ -604,6 +622,11 @@ void closeImpl() {
     // Call the close method in SysOpenFile 
     // Remove the file  in the open file list of this process PCB.
     // Implement me
+    UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID); //KC
+    SysOpenFile* sysOpenFilePtr = openFileManager->getFile(userFile->fileName,
+							   ( userFile->indexInSysOpenFileList));// KC
+    sysOpenFilePtr->closedBySingleProcess(); // KC
+    currentThread->space->getPCB()->removeFile(fileID); // KC
 }
 
 //----------------------------------------------------------------------
