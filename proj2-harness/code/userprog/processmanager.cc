@@ -97,14 +97,21 @@ void ProcessManager::join(int pid) {
         conditionForOtherProcess = new Condition("");
         conditionList[pid] = conditionForOtherProcess;
     }
-   // Implement me. 
-   // Acqure the lock on this pid
-   // Increase the counter processesWaitingOnPID[pid] as the number of processes waiting for this 
-   // Conditional wait  
+   // Implement me. -- done
+   // Acquire the lock on this pid
+    lockForOtherProcess->Acquire();
+   // Increase the counter processesWaitingOnPID[pid] as the number of processes waiting for this
+    processesWaitingOnPID[pid]++;
+   // Conditional wait
+    while(processesWaitingOnPID[pid] > 0){
+      conditionForOtherProcess->Wait(lockForOtherProcess);
+    }
    // Decrease the counter processesWaitingOnPID[pid]
+    processesWaitingOnPID[pid]--;
    // If the above coutner bcomes 0,  recycle pid.
+    if(processesWaitingOnPID[pid] == 0) clearPID(pid);
    // Release the lock on this pid
-  //  
+    lockForOtherProcess->Release();
 
 }
 
@@ -116,15 +123,20 @@ void ProcessManager::join(int pid) {
 
 void ProcessManager::broadcast(int pid) {
 
-  //Lock* lock = lockList[pid];
-    Condition* condition = conditionList[pid];
-    pcbStatuses[pid] = pcbList[pid]->status;
+  Lock* lock = lockList[pid];
+  Condition* condition = conditionList[pid];
+  pcbStatuses[pid] = pcbList[pid]->status;
 
-    if (condition != NULL) { // something is waiting on this process
-	// Wake up others 
-	// Implement me
-	// Acquire the lock, conditional broadcast, release lock
+  if (condition != NULL) { // something is waiting on this process
+    // Wake up others 
+    // Implement me -- done
+    // Acquire the lock, conditional broadcast, release lock
+    lock->Acquire();
+    while( (getStatus(pid)!=-1)  && (processesWaitingOnPID[pid] > 0) ){
+      condition->Broadcast(lock);
     }
+    lock->Release();
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -141,10 +153,18 @@ int ProcessManager::getStatus(int pid) {
 
 //------------------------------
 // ProcessManager::getPCB
+// - Returns PCB* via pid
 //----------------------------
 
 PCB* ProcessManager::getPCB(int pid){
-  for (int i = 0; i < MAX_PROCESSES; i++){
-    if(pcbList[i]->getPID() == pid) return pcbList[i];
-  }
+  return pcbList[pid];
+}
+
+//---------------------------
+// ProcessManager::getAddrSpace
+// - Returns AddrSpace* via pid
+//---------------------------
+
+AddrSpace* ProcessManager::getAddrSpace(int pid){
+  return addrSpaceList[pid];
 }

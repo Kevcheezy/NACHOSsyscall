@@ -168,15 +168,23 @@ int forkImpl() {
 
     int newProcessPC = machine->ReadRegister(4);
 
-    // Find a new PID, and then construct new PCB. 
-   // Implement me
-    int currPID = 1; // @@@ STUB @@@
+    // Find a new PID, and then construct new PCB.
+    
+    int newPID = processManager->getPID(); // -----(KC)-----
+    int currPID = currentThread->space->getPCB()->getPID(); //---KC----
+    PCB* newChildPCB = new PCB(newPID, currPID); // ----- KC ----
+ 
    // More hintes: Use processManager to get a new PID.
 
    // After finding out your own PID, call new AddrSpace() to create a new space
     // Make a copy of the address space as the child space, save its registers
    // Implement me
-    int childNumPages = 1; // @@@ STUB @@@ 
+
+    AddrSpace* parentAddrSpace = processManager->getAddrSpace(currPID); // -- KC ---
+    AddrSpace* childAddrSpace = new AddrSpace(parentAddrSpace, newChildPCB); // --KC---
+    int childNumPages = childAddrSpace->getNumPages(); // ---KC---
+    currentThread->SaveUserState(); //----KC----
+    
     // Mandatory printout of the forked process
     PCB* parentPCB = currentThread->space->getPCB();
     PCB* childPCB = childThread->space->getPCB();
@@ -186,7 +194,6 @@ int forkImpl() {
     // Set up the function for the that new process will run and yield
     childThread->Fork(copyStateBack, newProcessPC);
     currentThread->Yield();
-    int newPID = 1; // @@@ STUB @@@
     return newPID;
 }
 
@@ -221,12 +228,16 @@ void copyStateBack(int forkPC) {
 
 void yieldImpl() {
 
-    
+
     //Save the corresponding user process's register states.
+    currentThread->SaveUserState();
     //This kernel thread yields
+    currentThread->Yield();
     //Now this process is resumed for exectuion after yielding.
     //Restore the corresponding user process's states (both registers and page table)
-    
+    currentThread->RestoreUserState();
+    currentThread->space->RestoreState();
+    machine->Run();
    // Implement me
    // Essentially you use currentThread->Yield() to accomplish the context switch 
    // of corresponding user process. But before that, make sure you follow above comments.
@@ -521,13 +532,25 @@ void writeImpl() {
         //Fetch data from the user space to this system buffer using  userReadWrite().
         //Just two line of code
         //Implement me
-        UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
+      
+      UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID); //given
+      int numBytesCopied = userReadWrite(currentThread->space->Translate(writeAddr),
+					 buffer,
+					 size,
+					 USER_WRITE);//KC
+	
 	//Use openFileManager->getFile method  to find the openned file structure (SysOpenFile)
 	//Use SysOpenFile->file's writeAt() to write out the above buffer with size listed.
 	//Increment the current offset  by the actual number of bytes written.
         //Just 3 lines of code
         //Implement me
-            
+      
+      SysOpenFile* sysOpenFilePtr = openFileManager->getFile(userFile->fileName,
+							     userFile->indexInSysOpenFileList);// KC
+      int numBytesWritten =  sysOpenFilePtr->file->WriteAt(buffer,
+							   numBytesCopied,
+							   userFile->currOffsetInFile); // KC
+      userFile->currOffsetInFile = userFile->currOffsetInFile + numBytesWritten;
         
     }
     delete [] buffer;

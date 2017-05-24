@@ -23,14 +23,17 @@ PCB::PCB(int pid1, int parentPID1) : openFilesBitMap(MAX_NUM_FILES_OPEN) {
   //openFilesBitMap maintains what has been opened.
   // Account for files that are already opened, including descriptor  0 and 1
   // Child process should inherit the file descriptors openned in the parent process
+  openFilesBitMap.Mark(0);
+  openFilesBitMap.Mark(1);
+  openFilesBitMap.Mark(2);
   // Copy parent's openFilesBitMap
+  /*
   PCB* parentPCB = processManager->getPCB(parentPID);
-  BitMap parentBitMap = parentPCB->getOpenFilesBitMap();
+  BitMap* parentBitMap = parentPCB->getOpenFilesBitMap();
   // Copy parent's userOpenFileList
   UserOpenFile* parentUserFileOpenList = parentPCB->getUserOpenFileList();
-  unsigned int parentBit;
   for(int i = 0; i < MAX_NUM_FILES_OPEN ; i++){
-    if(parentBitMap.Test(i) == TRUE){
+    if(parentBitMap->Test(i) == TRUE){
       openFilesBitMap.Mark(1);
     }
     else{
@@ -38,6 +41,7 @@ PCB::PCB(int pid1, int parentPID1) : openFilesBitMap(MAX_NUM_FILES_OPEN) {
     }
     this->userOpenFileList[i] = parentUserFileOpenList[i];
   }
+  */
 }
 
 //-----------------------------------------------------------------------------
@@ -106,8 +110,8 @@ void PCB::removeFile(int fileID) {
 // PCB::getOpenFilesBitMap()
 // - Returns openFilesBitMap of PCB
 //----------------------------------------
-BitMap PCB::getOpenFilesBitMap(){
-  return this->openFilesBitMap;
+BitMap* PCB::getOpenFilesBitMap(){
+  return &openFilesBitMap;
 }
 
 //------------------------------------
@@ -115,5 +119,5 @@ BitMap PCB::getOpenFilesBitMap(){
 // - Returns userOpenFileList of PCB
 //-----------------------------------
 UserOpenFile* PCB::getUserOpenFileList(){
-  return this->userOpenFileList;
+  return userOpenFileList;
 }
