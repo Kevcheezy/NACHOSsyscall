@@ -31,8 +31,8 @@ class PCB {
         int addFile(UserOpenFile file);
         UserOpenFile* getFile(int fileID);
         void removeFile(int fileID);
-	BitMap* getOpenFilesBitMap(); // (KC)
-	UserOpenFile* getUserOpenFileList(); //(KC)
+	//	BitMap* getOpenFilesBitMap(); // (KC)
+	//UserOpenFile* getUserOpenFileList(); //(KC)
 	
 
     private:

@@ -25,7 +25,7 @@ PCB::PCB(int pid1, int parentPID1) : openFilesBitMap(MAX_NUM_FILES_OPEN) {
   // Child process should inherit the file descriptors openned in the parent process
   openFilesBitMap.Mark(0);
   openFilesBitMap.Mark(1);
-  openFilesBitMap.Mark(2);
+  //openFilesBitMap.Mark(2);
   // Copy parent's openFilesBitMap
   /*
   PCB* parentPCB = processManager->getPCB(parentPID);
@@ -103,21 +103,4 @@ UserOpenFile* PCB::getFile(int fileID) {
 
 void PCB::removeFile(int fileID) {
     openFilesBitMap.Clear(fileID);
-}
-
-
-//-----------------------------------------
-// PCB::getOpenFilesBitMap()
-// - Returns openFilesBitMap of PCB
-//----------------------------------------
-BitMap* PCB::getOpenFilesBitMap(){
-  return &openFilesBitMap;
-}
-
-//------------------------------------
-// PCB:: getUserOpenFileList()
-// - Returns userOpenFileList of PCB
-//-----------------------------------
-UserOpenFile* PCB::getUserOpenFileList(){
-  return userOpenFileList;
 }
